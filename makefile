@@ -15,4 +15,4 @@ $(TARGET): $(TARGET).cpp $(TARGET).h
 	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cpp
 
 clean:
-	$(RM) -R $(TARGET) .nfs*
+	$(RM) -R $(TARGET) Dark.out Light.out
