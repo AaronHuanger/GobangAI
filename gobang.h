@@ -25,6 +25,7 @@ class Gobang{
 
         int getMinLeaf(std::pair<int, int> move);
 
+        void printTest();
         //where n is the value of the move. AKA whether or not the move belongs to opponent or program
         int calcTotScore(int first, int second, int n, int prevScore, int prevFirst, int prevSecond);
         int calcTotScore(std::string move, int n);

@@ -29,33 +29,35 @@ void Gobang::initialize(int num, char *input[]){
     oneBlock.insert({1, 10});
     oneBlock.insert({2, 20});
     oneBlock.insert({3, 30});
-    oneBlock.insert({4, 40});
-    oneBlock.insert({5, 10000});
+    oneBlock.insert({4, 100});
+    oneBlock.insert({5, 10000000});
 
     noBlocks.insert({0, 0});
     noBlocks.insert({1, 100});
     noBlocks.insert({2, 200});
     noBlocks.insert({3, 300});
-    noBlocks.insert({4, 1000});
-    noBlocks.insert({5, 10000});
+    noBlocks.insert({4, 5000});
+    noBlocks.insert({5, 10000000});
 
     //Go first if first. Read input if last
     if(isLight){
         IOcontroller();
     }else{
         //start first and places the piece at the middle of the board. 
+        std::cout << "Move played:" << std::endl;
         if(boardSize % 2 == 0){
             consider.insert(std::pair<int, int>((boardSize/2),(boardSize/2)-1));
-            std::cout << "Move played: " << convertChar(boardSize/2) << boardSize/2 << std::endl;
+            std::cout << "Move played:" << convertChar(boardSize/2) << boardSize/2 << std::endl;
             curBoardScore = calcTotScore(convertChar(boardSize/2) + std::to_string(boardSize/2), 1);
             //std::cout << "curBoardScore = " << curBoardScore <<std::endl;
             board[(boardSize/2)][(boardSize/2)-1] = 1;
         }else{ //odd number insertion
             consider.insert(std::pair<int, int>((boardSize/2) + 1,boardSize/2));
-            std::cout << "Move played: " << convertChar((boardSize/2) + 1) << (boardSize/2) + 1 << std::endl;
+            std::cout << "Move played:" << convertChar((boardSize/2) + 1) << (boardSize/2) + 1 << std::endl;
             curBoardScore = calcTotScore(convertChar((boardSize/2) + 1) + std::to_string((boardSize/2) + 1), 1);
             board[(boardSize/2) + 1][(boardSize/2)] = 1;
         }
+        printBoard();
         IOcontroller();
     }
 }
@@ -65,18 +67,19 @@ void Gobang::IOcontroller(){
     bool notMoved = true;
 
     while(!gameOver){
-        if(std::abs(curBoardScore) > 5000){
+        if(std::abs(curBoardScore) > 1000000){
             gameOver = true;
             if(curBoardScore > 0)
                 std::cout << "You lose" << std::endl;
             else
                 std::cout << "You win" << std::endl;
+            break;
         }
         //read opponent's move
         std::cin >> move;
         while(notMoved){
             if(isValid(move)){
-                std::cout << "Move played: " << move << std::endl;
+                std::cout << "Move played:" << move << std::endl;
                 curBoardScore = calcTotScore(move, -1);
                 std::cout << "After Opponent: " << curBoardScore << std::endl;
                 consider.insert(std::pair<int, int>(convertInt(move[0]), std::stoi(move.substr(1))-1));
@@ -84,9 +87,9 @@ void Gobang::IOcontroller(){
                 notMoved = false;
                 
                 //testing purposes
-                //std::cout << "curBoardScore: " << curBoardScore << std::endl;
+                std::cout << "curBoardScore: " << curBoardScore << std::endl;
                 printBoard();
-                printConsider();
+                //printConsider();
             }else{
                 std::cout << "please enter a valid move" << std::endl;
                 std::cin >> move;
@@ -98,12 +101,12 @@ void Gobang::IOcontroller(){
         
         //output move
         consider.insert(decidedMove);
-        std::cout << "Move played: " << convertChar(decidedMove.first) << decidedMove.second + 1 << std::endl;
+        std::cout << "Move played:" << convertChar(decidedMove.first) << decidedMove.second + 1 << std::endl;
         curBoardScore = calcTotScore(convertChar(decidedMove.first) + std::to_string(decidedMove.second + 1), 1);
         board[decidedMove.first][decidedMove.second] = 1;
         printBoard();
-        printConsider();
-        std::cout << "After Program: " << curBoardScore << std::endl;
+        //printConsider();
+        //std::cout << "After Program: " << curBoardScore << std::endl;
     }
 }
 
@@ -125,10 +128,17 @@ void Gobang::printBoard(){
             std::cout << i + 1 << "|";
         }
         for(int j = 0; j < boardSize; j++){
-            if(board[j][i] >= 0){
+            /*if(board[j][i] >= 0){
                 std::cout << " " << board[j][i] << " ";
             }else{
                 std::cout << board[j][i] << " ";
+            }*/
+            if(board[j][i] == 0){
+                std::cout << " " << "-" << " ";
+            }else if(board[j][i] == 1){
+                std::cout << " " << "O" << " ";
+            }else if(board[j][i] == -1){
+                std::cout << " " << "X" << " ";
             }
         }
         std::cout << "\n";
@@ -178,13 +188,14 @@ int Gobang::calcTotScore(int first, int second, int n, int prevScore, int prevFi
     //int totScore = 0;
     std::string move = convertChar(first) + std::to_string(second + 1);
     
+    board[prevFirst][prevSecond] = -n;
+
     totScore -= calcHoriz(move, n);
     totScore -= calcVert(move, n);
     totScore -= calcUpDownDiag(move, n);
     totScore -= calcDownUpDiag(move, n);
 
     board[first][second] = n;
-    board[prevFirst][prevSecond] = -n;
 
     totScore += calcVert(move, n);
     totScore += calcHoriz(move, n);
@@ -554,8 +565,15 @@ int Gobang::calcDownUpDiag(std::string move, int n){
 }
 int Gobang::getScore(int blocks, int consc){
     int score = 0;
+    if(consc > 5){ //added after realizing opponent could get more than 5 in a row.
+        consc = 5;
+    }
     if(blocks == 2){
-        score = 0;
+        if(consc != 5){ // added after realizing opponent could get 5 in a row with 2 blocks
+            score = 0;
+        }else{
+            score = 10000;
+        }
     }else if(blocks == 1){
         score = oneBlock[consc];
     }else if(blocks == 0){
@@ -575,7 +593,7 @@ void Gobang::printConsider(){
     std::cout << "contents: " << std::endl;
     for (std::set<std::pair<int,int>>::iterator it=consider.begin(); it!=consider.end(); ++it)
         std::cout << "   letter format: " << convertChar(it->first) + std::to_string(it->second + 1)<< "  Number format: ("<< it->first << "," << it->second << ")"  << std::endl;
-    std::cout << "\n";
+    //std::cout << "\n";
 }
 
 void Gobang::decideMove(){
@@ -595,90 +613,30 @@ void Gobang::createTree(){
     int minChild;
 
     int inValid = 0;
+
     for (std::set<std::pair<int,int>>::iterator it=consider.begin(); it!=consider.end(); ++it){
-        if(isValid(it->first - 1, it->second + 1)){ // topleft
-            //tree.push({false, std::pair<int,int>(it->first -1 , it->second + 1), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first - 1, it->second + 1));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first - 1, it->second + 1);
+        for(int i = -1; i <= 1; i++){
+            for(int j = -1; j <= 1; j++){
+                if(isValid(it->first + i, it->second + j)){
+                    //tree.push({false, std::pair<int,int>(it->first + i , it->second + j), 1, 0});
+                    minChild = getMinLeaf(std::pair<int, int> (it->first + i, it->second + j));
+                    //std::cout << "Program is currently pondering: " << convertChar(it->first + i) << it->second + j + 1 << std::endl;
+                    if(minChild > maxScore){
+                        maxScore = minChild;
+                        decidedMove = std::pair<int, int> (it->first + i, it->second + j);
+                        //std::cout << "maxScore: " << maxScore << std::endl;
+                    //std::cout << "decided Move so far: " << convertChar(decidedMove.first) << decidedMove.second + 1<< std::endl;
+
+                    }
+                }else{
+                    inValid++;
+                }
             }
-        }else{
-            inValid++;
-        }
-        if(isValid(it->first, it->second + 1)){//top
-            //tree.push({false, std::pair<int,int>(it->first , it->second + 1), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first, it->second + 1));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first, it->second + 1);
-            }
-        }else{
-            inValid++;
-        }
-        if(isValid(it->first + 1, it->second + 1)){//top right
-            //tree.push({false, std::pair<int,int>(it->first +1 , it->second + 1), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first + 1, it->second + 1));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first + 1, it->second + 1);
-            }
-        }else{
-            inValid++;
-        }
-        if(isValid(it->first - 1, it->second)){//left
-            //tree.push({false, std::pair<int,int>(it->first -1 , it->second), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first - 1, it->second));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first - 1, it->second);
-            }
-        }else{
-            inValid++;
-        }
-        if(isValid(it->first + 1, it->second)){//right
-            //tree.push({false, std::pair<int,int>(it->first +1 , it->second), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first + 1, it->second));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first + 1, it->second);
-            }
-        }else{
-            inValid++;
-        }
-        if(isValid(it->first - 1, it->second - 1)){//bottomleft
-            //tree.push({false, std::pair<int,int>(it->first -1 , it->second - 1), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first - 1, it->second - 1));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first - 1, it->second - 1);
-            }
-        }else{
-            inValid++;
-        }
-        if(isValid(it->first, it->second - 1)){//bottom
-            //tree.push({false, std::pair<int,int>(it->first , it->second + 1), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first, it->second - 1));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first, it->second - 1);
-            }
-        }else{
-            inValid++;
-        }
-        if(isValid(it->first + 1, it->second - 1)){//bottomright
-            //tree.push({false, std::pair<int,int>(it->first +1 , it->second - 1), 1, 0});
-            minChild = getMinLeaf(std::pair<int, int> (it->first + 1, it->second - 1));
-            if(minChild > maxScore){
-                maxScore = minChild;
-                decidedMove = std::pair<int, int> (it->first + 1, it->second - 1);
-            }
-        }else{
-            inValid++;
         }
         if(inValid == 8){
             purge.push_back(*it);
         }
+        inValid = 0;
     }
     //purge moves that are no longer needed to be considered
     for(size_t i = 0; i < purge.size() ; i++){
@@ -690,24 +648,28 @@ int Gobang::getMinLeaf(std::pair<int, int> move){ //make it so that it works for
     int minScore = 9999999;
     consider.insert(move);
     int prev = calcTotScore(move.first, move.second, 1, curBoardScore,move.first, move.second);
+    
     for (std::set<std::pair<int,int>>::iterator it=consider.begin(); it!=consider.end(); ++it){
-        if(isValid(it->first + 1, it->second + 1) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first + 1, it->second + 1, -1, prev, move.first, move.second);
-        if(isValid(it->first, it->second + 1) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first, it->second + 1, -1, prev, move.first, move.second));
-        if(isValid(it->first - 1, it->second + 1) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first - 1, it->second + 1, -1, prev, move.first, move.second));
-        if(isValid(it->first + 1, it->second - 1) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first + 1, it->second - 1, -1, prev, move.first, move.second));
-        if(isValid(it->first, it->second - 1) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first, it->second - 1, -1, prev, move.first, move.second));
-        if(isValid(it->first - 1, it->second - 1) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first - 1, it->second - 1, -1, prev, move.first, move.second));
-        if(isValid(it->first + 1, it->second) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first + 1, it->second, -1, prev, move.first, move.second));
-        if(isValid(it->first - 1, it->second) && minScore > alpha)
-            minScore = std::min(minScore, calcTotScore(it->first - 1, it->second, -1, prev, move.first, move.second));
+        for(int i = -1; i <= 1; i++){
+            for(int j = -1; j <= 1; j++){
+                if(isValid(it->first + i, it->second + j)){
+                    minScore = std::min(minScore, calcTotScore(it->first + i, it->second + j, -1, prev, move.first, move.second));
+                    //std::cout << "If player chooses: " << convertChar(it->first + i) << it->second + j + 1<< std::endl;
+                    //std::cout << "Resulting minScore: " << minScore << std::endl;
+                }
+            }
+        }
     }
+    //std::cout << "prev: " << prev << std::endl;
+    //std::cout << "calculated MinScore: " << minScore << std::endl;
+    //std::cout << "decided Move so far: " << convertChar(decidedMove.first) << decidedMove.second + 1<< std::endl;
     consider.erase(consider.find(move));
     return minScore;
+}
+
+void Gobang::printTest(){
+    for(int i = 0; i < boardSize; i++){
+        //std::cout << "calcHoriz a" + std::to_string(i) + ": " << calcHoriz("a" + std::to_string(i), )<< " ";
+    }
+    std::cout << "curBoardScore: " << curBoardScore << std::endl;
 }
