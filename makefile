@@ -4,14 +4,14 @@ CC = g++
 # compiler flags:
 #  -g    adds debugging information to the executable file
 #  -Wall turns on most, but not all, compiler warnings
-CFLAGS  = -g -Wall -Werror
-
+#CFLAGS  = -g -Wall -Werror
+CFLAGS  = -g -Werror
 # the build target executable:
 TARGET = gobang
 
 all: $(TARGET)
 
-$(TARGET): $(TARGET).cpp
+$(TARGET): $(TARGET).cpp $(TARGET).h
 	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cpp
 
 clean:
