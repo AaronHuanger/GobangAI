@@ -21,8 +21,6 @@ class Gobang{
 
         void decideMove();
         
-        void createTree();
-
         int getMinLeaf(std::pair<int, int> move);
 
         void printTest();
@@ -50,7 +48,7 @@ class Gobang{
         int boardSize = 11;
         int curBoardScore = 0;
 
-        int depth = 2;
+        //int depth = 2;
         /*std::queue<Node> tree; 
         
         int beta;*/
