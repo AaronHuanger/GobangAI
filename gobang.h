@@ -46,23 +46,17 @@ class Gobang{
     private:
         int boardSize = 11;
         int curBoardScore = 0;
-
-        //int depth = 2;
-        /*std::queue<Node> tree; 
-        
-        int beta;*/
+        int moveCount = 0;
         int alpha;
 
 
         bool isLight = false;
         bool gameOver = false;
         std::vector<std::vector<int>>board;
-        //std::vector<std::pair<int, int>> consider;
         std::set<std::pair<int, int>> consider;
 
         std::pair<int, int> decidedMove;
 
-        //{key, value} = {#consecutive tiles, resulting score}
         std::unordered_map<int, int> noBlocks;
         std::unordered_map<int, int> oneBlock;
         

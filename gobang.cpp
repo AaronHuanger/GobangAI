@@ -56,7 +56,7 @@ void Gobang::initialize(int num, char *input[]){
             curBoardScore = calcTotScore(convertChar((boardSize/2) + 1) + std::to_string((boardSize/2) + 1), 1);
             board[(boardSize/2) + 1][(boardSize/2)] = 1;
         }
-        //printBoard();
+        printBoard();
         IOcontroller();
     }
 }
@@ -74,11 +74,17 @@ void Gobang::IOcontroller(){
                 std::cout << "You win" << std::endl;
             break;
         }
+        if(moveCount+1 >= boardSize*boardSize){
+            gameOver = true;
+            std::cout << "Tie" << std::endl; 
+            break;
+        }
+
         //read opponent's move
+        std::cout << "Your Turn! Type in format (character)(number). Ex: a1 " << std::endl;
         std::cin >> move;
         while(notMoved){
             if(isValid(move)){
-                
                 std::cout << "opponent's move\nMove played: " << move << std::endl;
                 curBoardScore = calcTotScore(move, -1);
                 consider.insert(std::pair<int, int>(convertInt(move[0]), std::stoi(move.substr(1))-1));
@@ -89,9 +95,11 @@ void Gobang::IOcontroller(){
                 std::cin >> move;
             }
         }
+        moveCount++;
         notMoved = true;
         //decide own based off opponent's move
         decideMove();
+        moveCount++; 
         
         //output move
         consider.insert(decidedMove);
@@ -100,7 +108,7 @@ void Gobang::IOcontroller(){
 
         board[decidedMove.first][decidedMove.second] = 1;
 
-        //printBoard();
+        printBoard();
         //printConsider();
     }
 }
@@ -148,18 +156,25 @@ int Gobang::toOutput(int n){
 }
 bool Gobang::isValid(std::string move){ //checks if the position has already been taken
     //doesn't factor in when the opponent inputs an invalid input
-    int first = convertInt(move[0]);
-    int second = toInput(std::stoi(move.substr(1)));
-    if(first >= boardSize || second >= boardSize || first < 0 || second < 0){
-        std::cerr << "move is out of range" << std::endl;
+    try{
+        int first = convertInt(move[0]);
+        int second = toInput(std::stoi(move.substr(1)));
+            if(first >= boardSize || second >= boardSize || first < 0 || second < 0){
+            std::cerr << "move is out of range" << std::endl;
+        return false;
+        }
+        if(board[first][second] == 0){
+            return true;
+        }else{
+            std::cout << "another piece is already at this space" << std::endl;
+            return false;
+        }
+    }
+    catch(const std::invalid_argument& ia) {
+        std::cerr << "Please enter a valid input (letter + number). Ex:'a1'";
         return false;
     }
-    if(board[first][second] == 0){
-        return true;
-    }else{
-        std::cerr << "another piece is already at this space" << std::endl;
-        return false;
-    }
+
 }
 bool Gobang::isValid(int first, int second){ //checks if the position has already been taken
     //doesn't factor in when the opponent inputs an invalid input
